@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h1>WebSocket CALLENGE</h1>    
+    <label for="name">ADD YOUR NAME</label>
+    <input type="text" id="name" name="name">
+        <button onclick="go()">go</button>
+    <div id="status"><br></div>
+    <script>
+    
+        let status = document.getElementById("status");
+        let info = document.getElementById("name");
+       
+         const socket = new WebSocket("ws://wsc.2123.io/");
+         socket.binaryType = 'arraybuffer';
+ 
+        function go(){
+            let msg = {};
+            msg.name = info.value;
+            msg.command = "challenge accepted";
+            socket.send(JSON.stringify(msg));    
+            status.innerHTML += '<p>'+`${JSON.stringify(msg)}`+'</p><br>';
+        }  
+        
+        socket.onopen = function() {
+          console.log('cоединение установлено');
+        };
+
+        socket.onclose = function(event) {
+          if (event.wasClean) {
+            console.log('cоединение закрыто');
+          } else {
+            console.log('соединения как-то закрыто');
+          }
+        };
+            let token;
+            let arr;
+            let bitts;
+            
+            socket.onmessage = function(event) {
+                
+                let secondMsg = JSON.parse(event.data);
+                console.log(secondMsg);
+                status.innerHTML += '<p>'+`${JSON.stringify(secondMsg)}`+'</p><br>';
+                                               
+                let second = {};                
+                second.token = secondMsg.token;
+                second.command = secondMsg.next;
+                token = secondMsg.token;
+
+                socket.send(JSON.stringify(second));
+                status.innerHTML += '<p>'+`${JSON.stringify(second)}`+'</p><br>';
+
+                            socket.onmessage = function(event) {
+                            
+                            let thirdMsg = JSON.parse(event.data);
+                            console.log(thirdMsg);
+                            status.innerHTML += '<p>'+`${JSON.stringify(thirdMsg)}`+'</p><br>';
+                            let third = {};
+                            third.token = token;
+                            third.command = thirdMsg.name;
+                            third.answer = arif(thirdMsg.task.sign, thirdMsg.task.values);                            
+                            function arif(sign, arr){
+                                let out = arr[0];
+                                for(let i = 1; i<arr.length; i++){
+                                    out += sign+arr[i];
+                                }
+                                return eval(out);
+                                }
+                                console.log(third);
+                                socket.send(JSON.stringify(third));
+                                status.innerHTML += '<p>'+`${JSON.stringify(third)}`+'</p><br>';
+
+
+                                    socket.onmessage = function(event) {
+                            
+                                    let fourdMsg = JSON.parse(event.data);                                    
+                                    console.log(fourdMsg);                                    
+                                    status.innerHTML += '<p>'+`${JSON.stringify(fourdMsg)}`+'</p><br>';
+                                    let four = {};
+                                    four.token = token;
+                                    four.command = fourdMsg.next;
+                                    console.log(four);
+                                    socket.send(JSON.stringify(four));
+                                    status.innerHTML += '<p>'+`${JSON.stringify(four)}`+'</p><br>';
+
+                                    socket.onmessage = function(event) {
+                            
+                                    let fivedMsg = JSON.parse(event.data);
+                                    console.log(fivedMsg); 
+                                    status.innerHTML += '<p>'+`${JSON.stringify(fivedMsg)}`+'</p><br>';                                     
+                                    let five = {};
+                                    five.token = token;
+                                    five.command = fivedMsg.name;
+                                    five.answer = (eval(fivedMsg.task.fn))();                                    
+                                    socket.send(JSON.stringify(five));
+                                    status.innerHTML += '<p>'+`${JSON.stringify(five)}`+'</p><br>';
+
+
+                                        socket.onmessage = function(event) {
+                            
+                                        let sixMsg = JSON.parse(event.data);
+                                        console.log(sixMsg);                                        
+                                        status.innerHTML += '<p>'+`${JSON.stringify(sixMsg)}`+'</p><br>';
+                                        let six ={};
+                                        six.token = token;
+                                        six.command = sixMsg.next;
+                                        socket.send(JSON.stringify(six));                                                                               
+                                        status.innerHTML += '<p>'+`${JSON.stringify(six)}`+'</p><br>';
+
+
+                                            socket.onmessage = function(event) {      
+                                                                                                                                            
+                                                if(typeof event.data === 'string'){
+                                                    let parsed = JSON.parse(event.data);
+                                                    console.log(parsed);                                                                                                                                   
+                                                    status.innerHTML += '<p>'+`${JSON.stringify(parsed)}`+'</p><br>';
+                                                    bitts = parsed.task.bits;                                                    
+                                                }
+                                                if(event.data instanceof ArrayBuffer){
+                                                    if(bitts === 8){
+                                                    console.log('8 bits');
+                                                    arr = new Uint8Array(event.data).reduce(function(a,b){return a+b},0);  
+                                                        let outGo = {}
+                                                        outGo.token = token;
+                                                        outGo.command = "binary_arithmetic";
+                                                        outGo.answer = arr;
+                                                        console.log(outGo);
+                                                        socket.send(JSON.stringify(outGo));
+                                                        status.innerHTML += '<p>'+`${JSON.stringify(outGo)}`+'</p><br>';
+
+                                                            socket.onmessage = function(event) {
+                                                                console.log(JSON.parse(event.data));
+
+                                                                let last = {};
+                                                                last.token = token;
+                                                                last.command = 'win';
+                                                                console.log(last);
+                                                                socket.send(JSON.stringify(last));
+                                                                socket.onmessage = function(event) {
+                                                                console.log(JSON.parse(event.data));
+                                                                
+                                                                status.innerHTML += '<p>'+`${JSON.stringify(event.data)}`+'</p><br>';}
+                                                            }                                                  
+                                                    }
+
+                                                    if(bitts === 16){
+                                                    console.log('16 bits');
+                                                    arr = new Uint16Array(event.data).reduce(function(a,b){return a+b},0);  
+
+                                                            let outGo = {}
+                                                        outGo.token = token;
+                                                        outGo.command = "binary_arithmetic";
+                                                        outGo.answer = arr;
+                                                        console.log(outGo);
+                                                        socket.send(JSON.stringify(outGo));
+                                                        status.innerHTML += '<p>'+`${JSON.stringify(outGo)}`+'</p><br>';
+
+                                                            socket.onmessage = function(event) {
+                                                                console.log(JSON.parse(event.data));
+                                                                let last = {};
+                                                                last.token = token;
+                                                                last.command = 'win';
+                                                                console.log(last);
+                                                                socket.send(JSON.stringify(last));
+                                                                socket.onmessage = function(event) {
+                                                                console.log(JSON.parse(event.data));
+                                                                status.innerHTML += '<p>'+`${JSON.stringify(event.data)}`+'</p><br>';}
+                                                            }  
+                                                    }
+
+                                                    if(bitts === 32){
+                                                    console.log('32 bits');
+                                                    arr = new Uint32Array(event.data).reduce(function(a,b){return a+b},0); 
+                                                        let outGo = {}
+                                                        outGo.token = token;
+                                                        outGo.command = "binary_arithmetic";
+                                                        outGo.answer = arr;
+                                                        console.log(outGo);
+                                                        socket.send(JSON.stringify(outGo));
+                                                        status.innerHTML += '<p>'+`${JSON.stringify(outGo)}`+'</p><br>';
+
+                                                            socket.onmessage = function(event) {
+                                                                console.log(JSON.parse(event.data));
+                                                                let last = {};
+                                                                last.token = token;
+                                                                last.command = 'win';
+                                                                console.log(last);
+                                                                socket.send(JSON.stringify(last));
+                                                                socket.onmessage = function(event) {
+                                                                console.log(JSON.parse(event.data));
+                                                                status.innerHTML += '<p>'+`${JSON.stringify(event.data)}`+'</p><br>';}
+                                                            }                                                         
+                                                    }
+                                                }   
+                                            }
+                                        }
+                                    }
+                                }
+                            };
+            };
+
+        socket.onerror = function(event) {
+            console.log("ошибка " + event.message);
+        };
+    </script>
+</body>
+</html>
